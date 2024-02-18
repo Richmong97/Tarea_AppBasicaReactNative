@@ -1,7 +1,8 @@
+// Temporizador.js
 import React, { useState, useEffect } from 'react';
 import { View, Button, StyleSheet, Text, TextInput, Alert } from 'react-native';
 
-const Temporizador = () => {
+const Temporizador = ({ onTemporizadorCompleto }) => {
   const [tiempoRestante, setTiempoRestante] = useState({ minutos: 0, segundos: 0 });
   const [inputMinutos, setInputMinutos] = useState('');
   const [inputSegundos, setInputSegundos] = useState('');
@@ -15,16 +16,17 @@ const Temporizador = () => {
   const formatTime = (value) => (value < 10 ? `0${value}` : `${value}`);
 
   const iniciar = () => {
-    if (!pausado) { // Si no está pausado, iniciar normalmente
+    if (!pausado) {
       const minutos = parseInt(inputMinutos, 10) || 0;
       const segundos = parseInt(inputSegundos, 10) || 0;
 
       if (minutos === 0 && segundos === 0) {
-        // Si el tiempo es cero, no hacer nada
         return;
       }
 
-      setTiempoRestante({ minutos, segundos });
+      const tiempoInicial = { minutos, segundos };
+
+      setTiempoRestante(tiempoInicial);
       setInputMinutos('');
       setInputSegundos('');
 
@@ -33,6 +35,16 @@ const Temporizador = () => {
           if (prevTime.minutos === 0 && prevTime.segundos === 0) {
             clearInterval(id);
             Alert.alert('Tiempo finalizado', '¡El tiempo ha terminado!');
+
+            if (onTemporizadorCompleto) {
+              const tiempoCompletado = new Date();
+              onTemporizadorCompleto({
+                tipo: 'Temporizador',
+                tiempoTotal: tiempoInicial,
+                fechaHoraCompletado: tiempoCompletado.toISOString(),
+              });
+            }
+
             return { minutos: 0, segundos: 0 };
           }
 
@@ -80,7 +92,6 @@ const Temporizador = () => {
     setInputSegundos('');
     setPausado(false);
   };
-
 
   return (
     <View style={styles.container}>
